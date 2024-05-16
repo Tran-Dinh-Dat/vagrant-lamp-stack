@@ -1,13 +1,20 @@
 #!/bin/bash
 
-MYSQL_ROOT_PASSWORD='root'
-MYSQL_DATABASE='testing'
-MYSQL_USER='dbuser'
-MYSQL_USER_PASSWORD='secret'
-PROJECTFOLDER='Project'
+# Check if the .env file exists
+if [ ! -f .env ]; then
+    echo ".env file not found!"
+    exit 1
+fi
+
+# Load the .env file
+set -a
+source .env
+set +a
 
 # create project folder
 sudo mkdir "/var/www/html/${PROJECTFOLDER}"
+
+sudo chown -R $USER:$USER /var/www/html
 
 # LINUX STUFF
 sudo apt-get update
@@ -67,10 +74,17 @@ MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql --user=root <<-EOSQL
 EOSQL
 
 # setup hosts file
-yes | sudo cp /var/www/html/config/apache2/000-default.conf /etc/apache2/sites-available/000-default.conf
+yes | sudo cp /var/www/html/config/vhosts/000-default.conf /etc/apache2/sites-available/000-default.conf
+
+# Changing Apache’s Directory Index (Optional)
+yes | sudo cp /var/www/html/config/vhosts/dir.conf /etc/apache2/mods-enabled/dir.conf
+
+# php ini
+yes | sudo cp /var/www/html/config/php/php.ini /etc/php/8.1/apache2/php.ini
 
 # setup mysqld config
 yes | sudo cp /var/www/html/config/mysql/mysqld.cnf /etc/mysql/mysql.conf.d/mysqld.cnf
 
-sudo systemctl restart mysql.service
-sudo service apache2 restart
+
+sudo systemctl restart mysql
+sudo systemctl apache2 restart
