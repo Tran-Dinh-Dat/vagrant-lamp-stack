@@ -15,7 +15,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Provider settings
   config.vm.provider "virtualbox" do |vb|
-    vb.gui=true
+    vb.gui=false
     vb.memory="2048"
   end
 
